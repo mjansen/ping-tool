@@ -31,6 +31,7 @@ import Text.Printf
 import System.Environment
 import System.FilePath
 import System.Directory
+import System.Process
 
 import GHC.Exts
 
@@ -148,9 +149,7 @@ pingTimeStampSend s addrs ident seqNr = do
 
 showDB :: Map.Map SockAddr [EchoMsg] -> IO ()
 showDB db = do
-  (rows :: Int) <- read <$> getEnv "LINES"
-  (cols :: Int) <- read <$> getEnv "COLUMNS"
-  -- print (rows, cols)
+  [rows :: Int, cols :: Int] <- map read . words <$> readProcess "stty" [ "-F", "/dev/tty", "size" ] ""
   let xs           = sortWith fst . Map.toList . Map.filter (not . null) $ db
       as           = map (takeWhile (/= ':') . show . fst) xs
       prefixLen    = length . commonPrefix $ as
